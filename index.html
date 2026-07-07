@@ -598,10 +598,10 @@
     fetch(SHEET_CSV_URL)
       .then(res=>{
         if(!res.ok) throw new Error('No se pudo leer el Sheet (' + res.status + ')');
-        return res.text();
+        return res.arrayBuffer().then(buf => new TextDecoder('utf-8').decode(buf));
       })
       .then(csvText=>{
-        const parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true });
+        const parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true, transformHeader: h => h.trim() });
         buildDataFromRows(parsed.data);
         hideStatus();
         renderAll();
@@ -615,7 +615,7 @@
       fetch(SHIPPING_CSV_URL)
         .then(res=>res.text())
         .then(csvText=>{
-          const parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true });
+          const parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true, transformHeader: h => h.trim() });
           SHIPPING = parsed.data
             .map(r=>({ region:(r.region||'').trim(), cost:parsePrice(r.costo) }))
             .filter(r=>r.region);
